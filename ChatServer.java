@@ -112,11 +112,13 @@ class Client implements Runnable{
 			nickname = in.readLine();
 			msgBuffer.add(nickname + " just joined the chatroom...");
 
-
 			String message;
-			while ((message = in.readLine()) != null) {
-				msgBuffer.add(nickname + " says: " + message);
+			try {
+				while ((message = in.readLine()) != null) {
+					msgBuffer.add(nickname + " says: " + message);
+				}
 			}
+			catch (SocketException e) { }
 
 			/*while (true) {
 				try {

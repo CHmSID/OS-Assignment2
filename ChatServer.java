@@ -5,8 +5,24 @@ import java.io.*;
 * Takes messages from server thread and sends them
 * out to other clients
 */
-class ServerThread{
+class ServerThread implements Runnable{
 
+	private MessageBuffer msgBuffer;
+	private ConnectedClients clients;
+
+	public ServerThread(MessageBuffer msgBuffer, ConnectedClients clients){
+
+		this.msgBuffer = msgBuffer;
+	}
+
+	public void run(){
+
+		while(true){
+
+			String msg = msgBuffer.remove();
+			clients.relayMessage(msg);
+		}
+	}
 }
 
 /*

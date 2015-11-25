@@ -14,6 +14,7 @@ class ServerThread implements Runnable{
 	public ServerThread(MessageBuffer msgBuffer, ConnectedClients clients){
 
 		this.msgBuffer = msgBuffer;
+		this.clients = clients;
 	}
 
 	public void run(){
@@ -33,7 +34,7 @@ class ServerThread implements Runnable{
 class MessageBuffer{
 
 	//something like a queue of Message objects
-	private Queue buffer = new LinkedList<String>();
+	private Queue<String> buffer = new LinkedList<String>();
 	
 	//add method
 	public synchronized void add(String msg) {
@@ -111,9 +112,12 @@ class Client implements Runnable{
 			nickname = in.readLine();
 			msgBuffer.add(nickname + " just joined the chatroom...");
 
-			String message;
-			while ((message = in.readLine()) != null) {
-				msgBuffer.add(nickname + "says: " + message);
+			while (true) {
+				try {
+					String message = in.readLine();
+					msgBuffer.add(nickname + " says: " + message);
+				}
+				catch (SocketException e) { break; }
 			}
 
 			clients.remove(this);
@@ -141,7 +145,7 @@ class ChatServer{
 		ServerSocket serverSocket = null;
 		boolean running = true;
 
-		int port = 34000;
+		int port = 7777;
 
 		System.out.println("Starting up the server");
 		try{

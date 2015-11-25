@@ -36,6 +36,32 @@ class MessageBuffer{
 	//public void add(String msg)
 }
 
+
+class ConnectedClients {
+	private ArrayList<Client> clients;
+	private int numClients;
+
+	public ConnectedClients() {
+		clients = new ArrayList<Client>();
+	}
+
+	public synchronized void add(Client client) {
+		clients.add(client);
+		numClients++;
+	}
+
+	public synchronized void remove(Client client) {
+		clients.remove(client);
+		numClients--;
+	}
+
+	public synchronized void relayMessage(String message) {
+		for (Client client : clients) {
+			client.send(message);
+		}
+	}
+}
+
 /*
 * One per client connected to the server,
 * receives messages from client and queues them in the buffer
@@ -47,11 +73,13 @@ class Client implements Runnable{
 	PrintWriter out;
 	BufferedReader in;
 	MessageBuffer msgBuffer;
+	ConnectedClients clients;
 
-	public Client(Socket socket, MessageBuffer msgBuffer){
+	public Client(Socket socket, MessageBuffer msgBuffer, ConnectedClients clients){
 
 		this.socket = socket;
 		this.msgBuffer = msgBuffer;
+		this.clients = clients;
 	}
 
 	public void run(){
@@ -67,14 +95,11 @@ class Client implements Runnable{
 			msgBuffer.add(nickname + "says: " + message);
 		}
 
+		clients.remove(this);
 		in.close();
 		out.close();
 		socket.close();
 		msgBuffer.add(nickname + " just left the chatroom...");
-	}
-
-	public synchronized void relayMessage() {
-
 	}
 }
 
@@ -83,7 +108,9 @@ class ChatServer{
 	public static void main(String[] args){
 
 		MessageBuffer msgBuffer = new MessageBuffer();
+		ConnectedClients clients = new ConnectedClients();
 		ServerSocket serverSocket = null;
+
 		int port = 34000;
 
 		System.out.println("Starting up the server");
@@ -96,10 +123,18 @@ class ChatServer{
 			e.printStackTrace();
 		}
 
+		// Begin consumer thread
+		Thread serverThread = new Thread(new ServerThread(msgBuffer, clients));
+		serverThread.start();
+
 		// Begin accepting chat clients
 		while (true) {
 			Socket clientSocket = server.accept();
-			Client chatClient = new Client(clientSocket, msgBuffer);
+			Client chatClient = new Client(clientSocket, msgBuffer, clients);
+			clients.add(chatClient);
+
+			Thread clientThread = new Thread(chatClient);
+			clientThread.start();
 		}
 
 		System.out.println("Closing the server");

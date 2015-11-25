@@ -120,15 +120,6 @@ class Client implements Runnable{
 			}
 			catch (SocketException e) { }
 
-			/*while (true) {
-				try {
-					String message = in.readLine();
-					System.out.println(message);
-					msgBuffer.add(nickname + " says: " + message);
-				}
-				catch (SocketException e) { e.printStackTrace(); break; }
-			}*/
-
 			clients.remove(this);
 			in.close();
 			out.close();

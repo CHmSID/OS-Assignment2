@@ -47,12 +47,12 @@ class ConnectedClients {
 
 	public synchronized void add(Client client) {
 		clients.add(client);
-		numClients++;
+		System.out.println(++numClients);
 	}
 
 	public synchronized void remove(Client client) {
 		clients.remove(client);
-		numClients--;
+		System.out.println(--numClients);
 	}
 
 	public synchronized void relayMessage(String message) {

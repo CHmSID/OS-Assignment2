@@ -85,6 +85,10 @@ class Client implements Runnable{
 		socket.close();
 		msgBuffer.add(nickname + " just left the chatroom...");
 	}
+
+	public synchronized void send(String message) {
+		out.println(message);
+	}
 }
 
 class ChatServer{

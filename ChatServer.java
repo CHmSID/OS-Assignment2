@@ -16,8 +16,27 @@ class ServerThread{
 class MessageBuffer{
 
 	//something like a queue of Message objects
-
-	//public void add(String msg)
+	private Queue buffer = new LinkedList<String>();
+	
+	//add method
+	public synchronized void add(String msg) {
+		buffer.add(msg);
+		notifyAll();
+	}
+	
+	//remove method
+	public synchronized String remove(){
+		while(queue.isEmpty()){		
+			try(){
+				wait();
+			}
+			catch (InterruptedException e) { } 
+		}
+		
+		notifyAll();
+		return buffer.remove();
+		
+	}
 }
 
 /*

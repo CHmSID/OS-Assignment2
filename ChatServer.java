@@ -43,8 +43,8 @@ class MessageBuffer{
 	
 	//remove method
 	public synchronized String remove(){
-		while(queue.isEmpty()){		
-			try(){
+		while(buffer.isEmpty()){		
+			try {
 				wait();
 			}
 			catch (InterruptedException e) { } 
@@ -103,23 +103,28 @@ class Client implements Runnable{
 	}
 
 	public void run(){
-		out = new PrintWriter(socket.getOutputStream(), true);
-		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		try {
+			out = new PrintWriter(socket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-		// Retrieve nickname
-		nickname = in.readLine();
-		msgBuffer.add(nickname + " just joined the chatroom...");
+			// Retrieve nickname
+			nickname = in.readLine();
+			msgBuffer.add(nickname + " just joined the chatroom...");
 
-		String message;
-		while ((message = in.readLine()) != null) {
-			msgBuffer.add(nickname + "says: " + message);
+			String message;
+			while ((message = in.readLine()) != null) {
+				msgBuffer.add(nickname + "says: " + message);
+			}
+
+			clients.remove(this);
+			in.close();
+			out.close();
+			socket.close();
+			msgBuffer.add(nickname + " just left the chatroom...");
 		}
-
-		clients.remove(this);
-		in.close();
-		out.close();
-		socket.close();
-		msgBuffer.add(nickname + " just left the chatroom...");
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public synchronized void send(String message) {
@@ -134,6 +139,7 @@ class ChatServer{
 		MessageBuffer msgBuffer = new MessageBuffer();
 		ConnectedClients clients = new ConnectedClients();
 		ServerSocket serverSocket = null;
+		boolean running = true;
 
 		int port = 34000;
 
@@ -152,8 +158,14 @@ class ChatServer{
 		serverThread.start();
 
 		// Begin accepting chat clients
-		while (true) {
-			Socket clientSocket = server.accept();
+		while (running) {
+			Socket clientSocket = null;
+			try {
+				clientSocket = serverSocket.accept();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 			Client chatClient = new Client(clientSocket, msgBuffer, clients);
 			clients.add(chatClient);
 

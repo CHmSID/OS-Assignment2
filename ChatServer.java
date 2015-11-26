@@ -139,7 +139,8 @@ class Client implements Runnable {
 
 	// Sends a message to the client
 	public void send(String message) {
-		out.println(message);
+		if (out != null)
+			out.println(message);
 	}
 }
 
@@ -175,13 +176,13 @@ class ChatServer {
 
 			// Create new client
 			Client chatClient = new Client(clientSocket, msgBuffer, clients);
-			
-			// Add client to the clients data structure			
-			clients.add(chatClient);
 
 			// Create and run client thread
 			Thread clientThread = new Thread(chatClient);
 			clientThread.start();
+
+			// Add client to the clients data structure			
+			clients.add(chatClient);
 		}
 
 		// Close socket

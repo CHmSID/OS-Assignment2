@@ -1,0 +1,4 @@
+We're using a queue of strings to hold messages that need to be relayed.
+We have a server thread which continually tries to take a message from the buffer and relay it to each client.
+We have a ConnectedClients data structure which holds an instance of each connected client.
+We have a Client class which holds informations about each client, like the network socket.

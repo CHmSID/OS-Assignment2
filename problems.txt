@@ -1,0 +1,3 @@
+There is no clean way to shutdown a server, however the client threads are shut down cleanly.
+Two people can connect with the same username.
+You can send empty messages.
